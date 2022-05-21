@@ -19,5 +19,9 @@
         "jsx": "react",
         "skipLibCheck": true
     },
-    "exclude": ["node_modules", "lib", "tests"]
+    "exclude": [
+        "node_modules",
+        "lib",
+        "tests"
+    ]
 }

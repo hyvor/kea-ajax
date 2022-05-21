@@ -25,10 +25,10 @@ export interface KeaAjaxOptions {
 }
 
 export type KeaAjaxDefinitions<LogicType extends Logic> = {
-    [K in keyof LogicType['actionCreators']]: (
-        payload?: ReturnType<LogicType['actionCreators'][K]>['payload'],
+    [key:string]: (
+        payload?: any,
         breakpoint?: BreakPointFunction,
-        action?: ReturnType<LogicType['actionCreators'][K]>,
+        action?: any,
     ) => Promise<any> | void
 }
 
@@ -36,7 +36,6 @@ export interface KeaAjaxObject {
 
     status: null | 'loading' | 'success' | 'error',
     error: string | null,
-
 
 }
 
@@ -78,8 +77,8 @@ export function ajax<L extends Logic = Logic>(
 
             const newActions: Record<string, any> = {};
             newActions[key] = (params: any) => params || {};
-            newActions[key + "Start"] = false;
-            newActions[key + "Success"] = false;
+            newActions[key + "Start"] = () => false;
+            newActions[key + "Success"] = () => false;
             newActions[key + "Error"] = (error: any) => ({error});
 
             const newReducers:
@@ -113,6 +112,7 @@ export function ajax<L extends Logic = Logic>(
             newListeners[key] = (payload = {}, breakpoint, action) => {
                 logic.actions[key + "Start"]();
                 try {
+                    // @ts-ignore
                     const response = handler(payload, breakpoint, action);
                     if (response && response.then && typeof response.then === "function") {
                         return response

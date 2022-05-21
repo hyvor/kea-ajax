@@ -1,7 +1,22 @@
-import {ParsedLogic, VisitKeaPropertyArguments} from "kea-typegen";
-import ts, { Type } from "typescript";
+import { VisitKeaPropertyArguments } from "kea-typegen";
+import ts, {factory, SyntaxKind } from "typescript";
+import { cloneNode } from '@wessberg/ts-clone-node'
 
-export function ajax({ parsedLogic, node, getTypeNodeForNode, prepareForPrint }: VisitKeaPropertyArguments) {
+function getParameterDeclaration(param: ts.ParameterDeclaration) {
+    return factory.createParameterDeclaration(
+        undefined,
+        undefined,
+        undefined,
+        factory.createIdentifier(param.name.getText()),
+        param.initializer || param.questionToken ? factory.createToken(SyntaxKind.QuestionToken) : undefined,
+        cloneNode(param.type || factory.createKeywordTypeNode(SyntaxKind.AnyKeyword)),
+        undefined,
+    )
+}
+
+export function ajax({ parsedLogic, node, type, getTypeNodeForNode, prepareForPrint }: VisitKeaPropertyArguments) {
+
+    const { checker } = parsedLogic
 
     // extract `() => ({})` to just `{}`
     if (
@@ -18,7 +33,54 @@ export function ajax({ parsedLogic, node, getTypeNodeForNode, prepareForPrint }:
     }
 
     for (const property of node.properties) {
-        console.log("Hey there!")
+        const ajaxKey = property.name?.getText() as string;
+
+        console.log(property.getChildren());
+
+        parsedLogic.reducers.push({
+            name: ajaxKey + "Ajax",
+            typeNode: factory.createTypeLiteralNode([
+                factory.createPropertySignature(
+                    undefined,
+                    factory.createIdentifier("status"),
+                    undefined,
+                    factory.createUnionTypeNode([
+                        factory.createLiteralTypeNode(factory.createNull()),
+                        factory.createLiteralTypeNode(factory.createStringLiteral("loading")),
+                        factory.createLiteralTypeNode(factory.createStringLiteral("success")),
+                        factory.createLiteralTypeNode(factory.createStringLiteral("error"))
+                    ])
+                ),
+                factory.createPropertySignature(
+                    undefined,
+                    factory.createIdentifier("error"),
+                    undefined,
+                    factory.createUnionTypeNode([
+                        factory.createLiteralTypeNode(factory.createNull()),
+                        factory.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+                    ])
+                )
+            ])
+        })
+
+        property
+
+        parsedLogic.actions.push({
+            name: ajaxKey,
+            parameters: [
+                factory.createParameterDeclaration(
+                    undefined,
+                    undefined,
+                    undefined,
+                    factory.createIdentifier('params'),
+                    factory.createToken(ts.SyntaxKind.QuestionToken),
+                    factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
+                    undefined,
+                )
+            ],
+            returnTypeNode: factory.createKeywordTypeNode(SyntaxKind.AnyKeyword)
+        })
+
     }
 
 }
