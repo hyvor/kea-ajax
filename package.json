@@ -1,12 +1,15 @@
 {
     "name": "kea-ajax",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "type": "commonjs",
-    "main": "src/index.ts",
-    "types": "src/index",
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.ts",
     "peerDependencies": {
         "kea": ">= 3"
     },
+    "files": [
+        "/lib"
+    ],
     "devDependencies": {
         "@babel/plugin-transform-modules-commonjs": "^7.18.0",
         "@babel/preset-env": "^7.18.0",
