@@ -1,5 +1,5 @@
 import {kea, reducers, path, actions} from "kea";
-import { ajax } from '../src'
+import { ajax } from '../../lib'
 
 import type { blogLogicType } from "./testLogicType";
 
@@ -9,13 +9,16 @@ const blogLogic = kea<blogLogicType>([
         loading: (params) => ({params})
     }),
     ajax(({actions, values}) => ({
-        load: ({isDev}) => {
+        load: ({isDev} : {isDev: boolean}) => {
             console.log("Hello Worlds");
         },
+        save: ({number}: {number: number}) => {
+            console.log(number)
+        }
     })),
     reducers({
         name: [
-            'supun',
+            'supuna',
             {}
         ]
 

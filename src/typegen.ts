@@ -1,6 +1,6 @@
-import { VisitKeaPropertyArguments } from "kea-typegen";
-import ts, {factory, SyntaxKind } from "typescript";
-import { cloneNode } from '@wessberg/ts-clone-node'
+import {VisitKeaPropertyArguments} from "kea-typegen";
+import ts, {factory, SyntaxKind} from "typescript";
+import {cloneNode} from '@wessberg/ts-clone-node'
 
 function getParameterDeclaration(param: ts.ParameterDeclaration) {
     return factory.createParameterDeclaration(
@@ -14,7 +14,7 @@ function getParameterDeclaration(param: ts.ParameterDeclaration) {
     )
 }
 
-export function ajax({ parsedLogic, node, type, getTypeNodeForNode, prepareForPrint }: VisitKeaPropertyArguments) {
+export function ajax({ parsedLogic, node, getTypeNodeForNode, prepareForPrint }: VisitKeaPropertyArguments) {
 
     const { checker } = parsedLogic
 
@@ -35,8 +35,12 @@ export function ajax({ parsedLogic, node, type, getTypeNodeForNode, prepareForPr
     for (const property of node.properties) {
         const ajaxKey = property.name?.getText() as string;
 
-        console.log(property.getChildren());
+        if (!ts.isPropertyAssignment(property) || !ts.isFunctionLike(property.initializer)) {
+            return;
+        }
 
+
+        // = REDUCERS
         parsedLogic.reducers.push({
             name: ajaxKey + "Ajax",
             typeNode: factory.createTypeLiteralNode([
@@ -63,22 +67,45 @@ export function ajax({ parsedLogic, node, type, getTypeNodeForNode, prepareForPr
             ])
         })
 
-        property
+
+        // = ACTIONS
+
+        const func = property.initializer
+        const param = func.parameters ? func.parameters[0] : null
+        const parameters = param ? [getParameterDeclaration(param)] : []
+
+        const returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.VoidKeyword)
 
         parsedLogic.actions.push({
             name: ajaxKey,
+            parameters,
+            returnTypeNode
+        })
+
+        parsedLogic.actions.push({
+            name: ajaxKey + "Start",
+            parameters: [],
+            returnTypeNode
+        })
+        parsedLogic.actions.push({
+            name: ajaxKey + "Success",
+            parameters: [],
+            returnTypeNode
+        })
+        parsedLogic.actions.push({
+            name: ajaxKey + "Error",
             parameters: [
                 factory.createParameterDeclaration(
                     undefined,
                     undefined,
                     undefined,
-                    factory.createIdentifier('params'),
-                    factory.createToken(ts.SyntaxKind.QuestionToken),
+                    factory.createIdentifier('error'),
+                    undefined,
                     factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
                     undefined,
                 )
             ],
-            returnTypeNode: factory.createKeywordTypeNode(SyntaxKind.AnyKeyword)
+            returnTypeNode
         })
 
     }
