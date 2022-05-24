@@ -17,12 +17,12 @@
         "esModuleInterop": true,
         "moduleResolution": "node",
         "jsx": "react",
-        "skipLibCheck": true
+        "skipLibCheck": true,
     },
     "exclude": [
         "node_modules",
         "lib",
         "tests",
-        "src/tests/*Type.ts"
+        "src/tests/test*.ts",
     ]
 }
