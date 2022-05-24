@@ -23,6 +23,6 @@
         "node_modules",
         "lib",
         "tests",
-        "src/__tests__"
+        "src/tests/*Type.ts"
     ]
 }

@@ -1,4 +1,5 @@
 import {VisitKeaPropertyArguments} from "kea-typegen";
+import { gatherImports } from 'kea-typegen/dist/src/utils'
 import ts, {factory, SyntaxKind} from "typescript";
 import {cloneNode} from '@wessberg/ts-clone-node'
 
@@ -73,6 +74,10 @@ export function ajax({ parsedLogic, node, getTypeNodeForNode, prepareForPrint }:
         const func = property.initializer
         const param = func.parameters ? func.parameters[0] : null
         const parameters = param ? [getParameterDeclaration(param)] : []
+
+        if (param) {
+            gatherImports(param, checker, parsedLogic)
+        }
 
         const returnTypeNode = factory.createKeywordTypeNode(SyntaxKind.VoidKeyword)
 
